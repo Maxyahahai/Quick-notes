@@ -1,3 +1,4 @@
+const token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MmM1MGJiMmRiMDA4ODcxOTRlMmVkNSIsImVtYWlsIjoibWF4QGV4YW1wbGUuY29tIiwiaWF0IjoxNzY0NTEzMTA0LCJleHAiOjE3NjQ1MTY3MDR9.BzbXNcBMvEpVu8Dktz0lj5Dsiyvpyt1N1xULZ0jYGh0;
 let notes = []
 let editingNoteId = null
 function loadNotes(){

@@ -3,8 +3,9 @@ let editingNoteId = null;
 let token = localStorage.getItem('token') || null; // JWT token
 
 // ------------------ NOTES FUNCTIONS ------------------
+
 async function loadNotes() {
-  if (!token) return []; // no token → no notes
+  if (!token) return; // no token → no notes
   try {
     const res = await fetch('http://localhost:5000/notes', {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -20,6 +21,12 @@ async function loadNotes() {
 
 async function saveNote(event) {
   event.preventDefault();
+
+  if (!token) {
+    alert('Please login to add notes!');
+    return;
+  }
+
   const title = document.getElementById('noteTitle').value.trim();
   const content = document.getElementById('noteContent').value.trim();
   if (!title || !content) return;
@@ -57,7 +64,7 @@ async function saveNote(event) {
 }
 
 async function deleteNote(noteId) {
-  if (!token) return;
+  if (!token) return alert('Please login to delete notes!');
   try {
     const res = await fetch(`http://localhost:5000/notes/${noteId}`, {
       method: 'DELETE',
@@ -74,8 +81,19 @@ async function deleteNote(noteId) {
 }
 
 // ------------------ RENDER / DIALOG FUNCTIONS ------------------
+
 function renderNotes() {
   const notesContainer = document.getElementById('notesContainer');
+  if (!token) {
+    notesContainer.innerHTML = `
+      <div class="empty-state">
+        <h2>Welcome to Quick Notes</h2>
+        <p>Please login or signup to start saving your notes.</p>
+      </div>
+    `;
+    return;
+  }
+
   if (notes.length === 0) {
     notesContainer.innerHTML = `
       <div class="empty-state">
@@ -100,6 +118,8 @@ function renderNotes() {
 }
 
 function openNoteDialog(noteId = null) {
+  if (!token) return alert('Please login first!');
+
   const dialog = document.getElementById('noteDialog');
   const titleInput = document.getElementById('noteTitle');
   const contentInput = document.getElementById('noteContent');
@@ -130,6 +150,7 @@ function toggleTheme() {
 }
 
 // ------------------ AUTH FUNCTIONS ------------------
+
 function openAuthDialog(mode = 'login') {
   const dialog = document.getElementById('authDialog');
   document.getElementById('authTitle').textContent = mode === 'login' ? 'Login' : 'Signup';
@@ -156,6 +177,7 @@ async function handleAuth(event) {
       body: JSON.stringify({ email, password })
     });
     const data = await res.json();
+
     if (!res.ok) throw new Error(data.error || 'Auth failed');
 
     alert(data.message);
@@ -164,45 +186,55 @@ async function handleAuth(event) {
     if (authMode === 'login') {
       token = data.token;
       localStorage.setItem('token', token);
-      updateUIForAuth();
-      await loadNotes();
-    } else {
-      updateUIForAuth(); // signup → UI updated
+      await loadNotes(); // fetch notes from backend
     }
+
+    updateUIForAuth();
   } catch (err) {
     console.error(err);
     alert('Auth error');
   }
 }
 
+// ------------------ LOGOUT ------------------
+
+function handleLogout() {
+  token = null;
+  localStorage.removeItem('token');
+  notes = [];
+  updateUIForAuth();
+}
+
 // ------------------ UI HELPERS ------------------
+
 function updateUIForAuth() {
   const addNoteBtn = document.querySelector('.add-note-btn');
-  const notesContainer = document.getElementById('notesContainer');
+  const loginBtn = document.getElementById('loginBtn');
+  const signupBtn = document.getElementById('signupBtn');
 
   if (!token) {
     addNoteBtn.disabled = true;
     addNoteBtn.style.opacity = 0.5;
     addNoteBtn.style.cursor = 'not-allowed';
 
-    notesContainer.innerHTML = `
-      <div class="empty-state">
-        <h2>Welcome to Quick Notes</h2>
-        <p>Please login or signup to start saving your notes.</p>
-      </div>
-    `;
+    loginBtn.style.display = 'inline-block';
+    signupBtn.style.display = 'inline-block';
   } else {
     addNoteBtn.disabled = false;
     addNoteBtn.style.opacity = 1;
     addNoteBtn.style.cursor = 'pointer';
+
+    loginBtn.style.display = 'none';
+    signupBtn.style.display = 'none';
   }
+
+  renderNotes();
 }
 
 // ------------------ EVENT LISTENERS ------------------
+
 document.addEventListener('DOMContentLoaded', () => {
   updateUIForAuth();
-
-  if (token) loadNotes();
 
   // Notes form
   document.getElementById('noteForm').addEventListener('submit', saveNote);
@@ -220,12 +252,20 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('signupBtn').addEventListener('click', () => openAuthDialog('signup'));
 
   // Auth form
-  document.getElementById('authForm').addEventListener('submit', async e => {
-    await handleAuth(e);
-  });
+  document.getElementById('authForm').addEventListener('submit', handleAuth);
 
   // Auth dialog click outside
   document.getElementById('authDialog').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeAuthDialog();
   });
+
+  // Add a logout button dynamically
+  const headerDiv = document.querySelector('header div');
+  const logoutBtn = document.createElement('button');
+  logoutBtn.textContent = 'Logout';
+  logoutBtn.id = 'logoutBtn';
+  logoutBtn.className = 'add-note-btn';
+  logoutBtn.style.background = '#ff5252';
+  logoutBtn.addEventListener('click', handleLogout);
+  headerDiv.appendChild(logoutBtn);
 });

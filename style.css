@@ -285,3 +285,52 @@ dialog::backdrop {
   font-size: 1rem;
   margin-bottom: 2rem;
 }
+
+/* --- Login / Signup Buttons --- */
+#loginBtn, #signupBtn {
+  background: var(--brand-color);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  margin-right: 0.5rem;
+}
+
+#loginBtn:hover, #signupBtn:hover {
+  background: #7a7fff;
+}
+
+/* --- Auth Dialog --- */
+#authDialog .dialog-content {
+  padding: 2rem;
+}
+
+#authDialog .dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+#authDialog .save-btn {
+  background: var(--brand-color);
+  color: white;
+}
+
+#authDialog .save-btn:hover {
+  background: #7a7fff;
+}
+
+#authDialog .form-input {
+  border: 2px solid var(--surface-color);
+  background: var(--base-color);
+  color: var(--text-color);
+}
+
+#authDialog .form-input:focus {
+  border-color: var(--brand-color);
+}
+
+
